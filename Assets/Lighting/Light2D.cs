@@ -6,7 +6,8 @@ public class Light2D: MonoBehaviour
 {
 	public float radius = 100;
 	public Mesh lightMesh = null;
-	protected List<Vector3> lightMeshPoints = new List<Vector3>();
+	protected List<Vector2> lightMeshPoints = new List<Vector2>();
+	protected LayerMask lightingMask;
 
 	// Use this for initialization
 	void Start () 
@@ -14,6 +15,8 @@ public class Light2D: MonoBehaviour
 		lightMesh = new Mesh();
 		MeshFilter filter = GetComponent<MeshFilter>();
 		filter.mesh = lightMesh;
+
+		lightingMask = 1 << LayerMask.NameToLayer("Lighting2DColliders");
 	}
 
 	void boundPointToArea(ref Vector2 point)
@@ -40,7 +43,7 @@ public class Light2D: MonoBehaviour
 
 	void TryAddRayCast(Vector2 dir, float distance)
 	{		
-		RaycastHit2D hit = Physics2D.Raycast(this.transform.position, dir, distance);
+		RaycastHit2D hit = Physics2D.Raycast(this.transform.position, dir, distance, lightingMask.value);
 		
 		if(hit.collider != null)
 		{
@@ -102,17 +105,18 @@ public class Light2D: MonoBehaviour
 	{
 		lightMeshPoints.Clear();
 
-		Collider2D[] collidersInRange = Physics2D.OverlapCircleAll(this.transform.position, radius, LayerMask.NameToLayer("Lighting2DColliders"));
+		Collider2D[] collidersInRange = Physics2D.OverlapCircleAll(this.transform.position, radius, lightingMask.value);
 
-		Dictionary<Type, ProcessColliderMethod> procDict = new Dictionary<Type, ProcessColliderMethod>();
-		procDict[typeof(PolygonCollider2D)] = (c) => ProcessPolygon(c);
+		//Dictionary<Type, ProcessColliderMethod> procDict = new Dictionary<Type, ProcessColliderMethod>();
+		//procDict[typeof(PolygonCollider2D)] = (c) => ProcessPolygon(c);
 		//procDict[typeof(CircleCollider2D)] = (c) => ProcessCircle(c);
 
 		//build points
 		for(int i = 0; i < collidersInRange.Length; i++)
 		{
 			Collider2D collider = collidersInRange[i];
-			procDict[collider.GetType()](collider);
+			ProcessPolygon(collider);
+			//procDict[collider.GetType()](collider);
 		}
 
 		Vector2[] corners = {new Vector2(-radius,-radius),new Vector2(-radius,radius),new Vector2(radius,radius),new Vector2(radius,-radius)};
@@ -125,20 +129,12 @@ public class Light2D: MonoBehaviour
 			TryAddRayCast(dir, dist);
 		}
 
-		//sort by angle from vertical axis
-		lightMeshPoints.Sort(delegate(Vector3 a, Vector3 b)
+		//sort by angle
+		lightMeshPoints.Sort(delegate(Vector2 a, Vector2 b)
 		{
-			float angleA = Vector3.Angle(Vector3.up, a);
-			if(a.x < 0)
-			{
-				angleA = 360 - angleA;
-			}
-			float angleB = Vector3.Angle(Vector3.up, b);
-			if(b.x < 0)
-			{
-				angleB = 360 - angleB;
-			}
-			return angleA.CompareTo(angleB);
+			float angleA = Mathf.Atan2(a.y, a.x);			
+			float angleB = Mathf.Atan2(b.y, b.x);
+			return -angleA.CompareTo(angleB);
 		});
 
 		lightMeshPoints.Add(Vector2.zero);
@@ -152,7 +148,14 @@ public class Light2D: MonoBehaviour
 	{
 		int vertexCount = lightMeshPoints.Count;
 
-		Vector3[] newVertices = lightMeshPoints.ToArray();
+		Vector3[] newVertices = new Vector3[vertexCount];
+		Vector2[] newUVs = new Vector2[vertexCount];
+		for(int i=0; i< vertexCount; i++)
+		{
+			Vector3 v = lightMeshPoints[i];
+			newVertices[i] = v;
+			newUVs[i] = v/(radius*2);
+		}
 
 		int triangleCount = vertexCount-1;
 		int[] newTriangles = new int[triangleCount * 3];
@@ -167,12 +170,6 @@ public class Light2D: MonoBehaviour
 		}
 		//correct final index
 		newTriangles[newTriangles.Length-1] = 0;
-		
-		Vector2[] newUVs = new Vector2[vertexCount];
-		for(int i=0; i<vertexCount; i++)
-		{
-			newUVs[i] = newVertices[i]/(radius*2);
-		}
 
 		lightMesh.Clear();
 		lightMesh.vertices = newVertices;

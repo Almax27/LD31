@@ -10,7 +10,11 @@ public class PlayerController : MonoBehaviour
 
     public static PlayerController instance = null;//lazy static accessor
 
-    public Character characterController;
+    public CombatCharacter character;
+
+	public bool inputLocked = false;
+
+	public FlareItem flareItemPrefab;
 
     #endregion
 
@@ -47,20 +51,20 @@ public class PlayerController : MonoBehaviour
             dir.x = 1;
         }
         
-		characterController.TryMove(dir);
+		character.TryMove(dir);
     }
 
     void TryLook()
     {
-		Vector3 characterScreenPosition = Camera.main.WorldToScreenPoint(characterController.transform.position);
-		characterController.TryLook(Input.mousePosition - characterScreenPosition);
+		Vector3 characterScreenPosition = Camera.main.WorldToScreenPoint(character.transform.position);
+		character.TryLook(Input.mousePosition - characterScreenPosition);
 	}
 	
     void TryAction()
     {
         if (Input.GetMouseButtonDown(0))
         {
-
+			character.TryMeleeAttack();
         }
         if (Input.GetMouseButtonUp(0))
         {
@@ -68,13 +72,19 @@ public class PlayerController : MonoBehaviour
         }
         if (Input.GetMouseButtonDown(1))
         {
-            
+			DropFlare();
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             
         }
     }
+
+	void DropFlare()
+	{
+		GameObject gobj = Instantiate(flareItemPrefab.gameObject) as GameObject;
+		gobj.transform.position = this.transform.position;
+	}
 
     #endregion
 
@@ -91,7 +101,7 @@ public class PlayerController : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
     {
-		if (characterController)
+		if (character)
 		{
 			if(controlLockTick <= 0)
             {
@@ -105,10 +115,10 @@ public class PlayerController : MonoBehaviour
             }
 
             //follow bot so audio can locate correctly
-			transform.position = characterController.transform.position;
+			transform.position = character.transform.position;
 		}
 
-		if(!characterController) //FIXME: gameover hack
+		if(!character) //FIXME: gameover hack
         {
             Application.LoadLevel(Application.loadedLevel);
         }
@@ -116,7 +126,7 @@ public class PlayerController : MonoBehaviour
 
     void OnDisable()
     {
-		characterController.TryMove(Vector2.zero);
+		character.TryMove(Vector2.zero);
     }
 
     #endregion

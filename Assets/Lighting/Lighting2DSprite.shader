@@ -4,8 +4,6 @@
 	{
 		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
 		_LightingTex ("Lighting Texture", 2D) = "black" {}
-		_AmbientLight ("AmbientLight", float) = 0
-		_CullLightThreshold ("Light threshold before cull", float) = 0
 		_Color ("Tint", Color) = (1,1,1,1)
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
 	}
@@ -56,9 +54,6 @@
 			sampler2D _LightingTex;
 			float4 _LightingTex_ST;
 			float4 _MainTex_ST;
-			
-			float _AmbientLight;
-			float _CullLightThreshold;
 
 			v2f vert(appdata_t IN)
 			{
@@ -79,19 +74,14 @@
 			{
 				fixed4 l = tex2D (_LightingTex, IN.screenPos);
 
-				float lum = _AmbientLight + l.a;
-				if(lum + _CullLightThreshold == 0) return float4(0,0,0,0);
+				float lum = l.a;
+				if(lum == 0) return float4(0,0,0,0);
 				
 				fixed4 tex = tex2D(_MainTex, IN.texcoord) * IN.color;
 				tex.rgb *= tex.a;
 				
-				if(lum < _CullLightThreshold)
-				{
-					tex.a *= lum / _CullLightThreshold;
-				}
+				float3 c = tex.rgb * l.rgb;				
 				
-				float3 c = tex.rgb * l.rgb * lum;
-				c += tex.rgb * _AmbientLight;
 				return float4(c, tex.a);
 				//return l;
 			}

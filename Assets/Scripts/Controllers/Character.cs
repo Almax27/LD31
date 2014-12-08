@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class Character : Killable {
-
+	
     public Transform moveBody;
     public Transform lookBody;
 
@@ -12,12 +12,12 @@ public class Character : Killable {
 
     public bool useSteering = false;
 
-    public float lifeTime = -1; //infinate by default
-
     public Vector2 Heading { get { return heading; } }
     public Vector2 LookDirection { get { return lookDirection; } }
 
-    bool isMoving;
+	protected Animator animator;
+
+    bool isMoving = false, wasMoving = false;
     Vector2 heading = Vector2.zero;
     Vector2 lookDirection = Vector2.zero;
 
@@ -31,7 +31,9 @@ public class Character : Killable {
             isMoving = true;
         }
         else
+		{
             isMoving = false;
+		}
     }
 
     public void TryTurn(Vector2 _heading)
@@ -57,6 +59,12 @@ public class Character : Killable {
         
     }
 
+	public override void OnDamage(DamagePacket _damagePacket)
+	{
+		base.OnDamage(_damagePacket);
+		animator.SetTrigger("OnDamage");
+	}
+
     #endregion
 
     #region Monobehaviour methods
@@ -64,7 +72,7 @@ public class Character : Killable {
 	// Use this for initialization
 	protected virtual void Start () 
 	{
-
+		animator = GetComponent<Animator>();
 	}
 	
 	// Update is called once per frame
@@ -75,6 +83,15 @@ public class Character : Killable {
 
     protected virtual void Update()
 	{
+		if(wasMoving != isMoving)
+		{
+			if(isMoving)
+				animator.SetTrigger("Walk");
+			else
+				animator.SetTrigger("Idle");
+			wasMoving = isMoving;
+		}
+
         if (isMoving)
         {
 
@@ -109,15 +126,6 @@ public class Character : Killable {
             Quaternion desiredFacing = Quaternion.Euler(new Vector3(0, 0, desiredAngle - 90));
             
             lookBody.transform.localRotation = Quaternion.RotateTowards(currentFacing, desiredFacing, lookRotationSpeed * Time.deltaTime);
-        }
-
-        if (lifeTime > 0)
-        {
-            lifeTime -= Time.deltaTime;
-            if(lifeTime <= 0)
-            {
-                OnDeath();
-            }
         }
 	}
 

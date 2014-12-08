@@ -15,6 +15,9 @@ SubShader {
 	
 	ZWrite Off
 	Blend SrcAlpha One
+	//Blend SrcAlpha OneMinusSrcAlpha
+	//Blend DstColor Zero
+	//Blend OneMinusDstColor One
 	
 	Pass {  
 		CGPROGRAM
@@ -52,11 +55,10 @@ SubShader {
 			{		
 				float dist = length(i.position);
 				
-				float att = clamp(1.0 - dist*dist/(_Radius*_Radius), 0.0, 1.0); 
-				att *= att * att;
+				float att = clamp((1.0 - dist*dist/(_Radius*_Radius)) * _Color.a, 0.0, 1.0); 
 				
 				float4 c = _Color;
-				c.a *= att;
+				c.a = att;
 						
 				return c;
 			}

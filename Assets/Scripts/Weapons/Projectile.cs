@@ -1,38 +1,58 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(CircleCollider2D))]
 public class Projectile : MonoBehaviour 
 {
-    public float damage = 1;
-    public float flightSpeed = 1;
+	public Killable owner = null; //TODO: change to team alignment
 
-    public Transform decalPrefab;
+	public int baseDamage = 1;
+	public float damageScale = 1;
+	public float speed = 5;
+	public float knockbackVelocity = 5;
 
-    #region monobehaviour methods
+	public bool destroyOnHit = true;
+	public float lifeTime = 1;
 
-	// Use this for initialization
-	void Start () 
-    {
-        rigidbody2D.velocity = transform.up * flightSpeed;
-    }
+	public GameObject[] spawnOnDestroy = new GameObject[0];
 
-    void Update()
-    {
+	void OnTriggerEnter2D(Collider2D _other)
+	{
+		Killable killable = _other.GetComponent<Killable>();
+		if(owner.CanDamage(killable))
+		{
+			int realDamage = (int)(baseDamage * damageScale);
+			Vector2 knockback = (killable.transform.position - this.transform.position).normalized * knockbackVelocity;
+			
+			DamagePacket damagePacket = new DamagePacket(owner, realDamage, knockback);
+			
+			killable.BroadcastMessage("OnDamage", damagePacket, SendMessageOptions.DontRequireReceiver);
 
-    }
+			if(destroyOnHit)
+			{
+				Destroy(gameObject);
+			}
+		}
+	}
 
-    void OnCollisionEnter2D(Collision2D _collision)
-    {
-        _collision.gameObject.SendMessage("OnDamage", damage, SendMessageOptions.DontRequireReceiver);
+	void Update()
+	{
+		lifeTime -= Time.deltaTime;
+		if(lifeTime <= 0)
+		{
+			Destroy(gameObject);
+		}
+		rigidbody2D.velocity = transform.up * speed;
+	}
 
-        GameObject gobj = Instantiate(decalPrefab.gameObject) as GameObject;
-        gobj.transform.position = _collision.contacts[0].point;
-
-        Destroy(this.gameObject);
-    }
-
-    #endregion
+	void OnDestroy()
+	{
+		for(int i = 0; i < spawnOnDestroy.Length; i++)
+		{
+			GameObject gobj = GameObject.Instantiate(spawnOnDestroy[i]) as GameObject;
+			gobj.transform.position = transform.position;
+		}
+	}
 
 }
