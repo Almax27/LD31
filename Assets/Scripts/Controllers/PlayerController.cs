@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour 
 {
@@ -15,6 +15,14 @@ public class PlayerController : MonoBehaviour
 	public bool inputLocked = false;
 
 	public FlareItem flareItemPrefab;
+
+	public int currentGun = 0;
+	public List<Gun> availableGuns = new List<Gun>();
+
+	public int currentMelee = 0;
+	public List<MeleeAttack> availableMelee = new List<MeleeAttack>();
+
+	public bool isMeleeSelected = false;
 
     #endregion
 
@@ -62,28 +70,144 @@ public class PlayerController : MonoBehaviour
 	
     void TryAction()
     {
-        if (Input.GetMouseButtonDown(0))
+		if (Input.GetKeyDown(KeyCode.Escape))
+		{
+			
+		}
+		
+		if (Input.GetMouseButtonDown(0))
         {
-			character.TryMeleeAttack();
+			Gun gun = GetCurrentGun();
+			if(gun)
+			{
+				gun.owner = character;
+				bool hasAttacked = gun.BeginFire();
+
+				if(hasAttacked && !string.IsNullOrEmpty(gun.animationTrigger))
+				{
+					character.animator.SetTrigger(gun.animationTrigger);
+				}
+			}
         }
         if (Input.GetMouseButtonUp(0))
         {
+			Gun gun = GetCurrentGun();
+			if(gun && gun.isFiring)
+			{
+				gun.owner = character;
+				gun.EndFire();
+			}
+        }
 
-        }
-        if (Input.GetMouseButtonDown(1))
-        {
+		if (Input.GetMouseButtonDown(1))
+		{
+			MeleeAttack melee = GetCurrentMelee();
+			if(melee)
+			{
+				bool hasAttacked = melee.ApplyDamage();
+				if(hasAttacked && !string.IsNullOrEmpty(melee.animationTrigger))
+				{
+					character.animator.SetTrigger(melee.animationTrigger);
+				}
+			}
+		}
+			
+			//drop flare
+		if (Input.GetKeyDown(KeyCode.F))
+		{
 			DropFlare();
-        }
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            
-        }
+		}
+
+		//cycle guns
+		if (Input.GetKeyDown(KeyCode.Q))
+		{
+			if(isMeleeSelected == false)
+			{
+				SelectGun(currentGun + 1);
+			}
+			else
+			{
+				SelectGun(currentGun);
+			}
+		}
+
+		//select gun
+		if (Input.GetKeyDown(KeyCode.Alpha1))
+		{
+			SelectGun(0);
+		}
+		else if (Input.GetKeyDown(KeyCode.Alpha2))
+		{
+			SelectGun(1);
+		}
+		else if (Input.GetKeyDown(KeyCode.Alpha3))
+		{
+			SelectGun(2);
+		}
+
+		//select melee
+		if (Input.GetKeyDown(KeyCode.E))
+		{
+			SelectMelee();
+		}
+
     }
 
 	void DropFlare()
 	{
 		GameObject gobj = Instantiate(flareItemPrefab.gameObject) as GameObject;
 		gobj.transform.position = this.transform.position;
+	}
+
+	Gun GetCurrentGun()
+	{
+		if(currentGun < availableGuns.Count)
+		{
+			return availableGuns[currentGun];
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	void SelectGun(int _gunIndex)
+	{
+		Gun previousGun = GetCurrentGun();
+		if(previousGun && previousGun.isFiring)
+		{
+			previousGun.EndFire();
+		}
+		//TODO: check if it has been purchased
+		currentGun = _gunIndex;
+		if(currentGun >= availableGuns.Count)
+		{
+			currentGun = 0;
+		}
+		isMeleeSelected = false;
+
+		Gun gun = GetCurrentGun();
+		if(gun && !string.IsNullOrEmpty(gun.animationTrigger))
+		{
+			character.animator.SetTrigger(gun.animationTrigger);
+		}
+	}
+
+	MeleeAttack GetCurrentMelee()
+	{
+		if(currentMelee < availableMelee.Count)
+		{
+			return availableMelee[currentMelee];
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	void SelectMelee()
+	{
+		isMeleeSelected = true;
 	}
 
     #endregion
@@ -116,6 +240,7 @@ public class PlayerController : MonoBehaviour
 
             //follow bot so audio can locate correctly
 			transform.position = character.transform.position;
+			transform.rotation = character.lookBody.rotation;
 		}
 
 		if(!character) //FIXME: gameover hack

@@ -15,11 +15,11 @@ public class Character : Killable {
     public Vector2 Heading { get { return heading; } }
     public Vector2 LookDirection { get { return lookDirection; } }
 
-	protected Animator animator;
+	public Animator animator;
 
     bool isMoving = false, wasMoving = false;
-    Vector2 heading = Vector2.zero;
-    Vector2 lookDirection = Vector2.zero;
+	Vector2 heading = Vector2.zero;
+    Vector2 lookDirection = Vector2.up;
 
     #region Bot methods
 
@@ -63,6 +63,14 @@ public class Character : Killable {
 	{
 		base.OnDamage(_damagePacket);
 		animator.SetTrigger("OnDamage");
+	}
+
+	public override Quaternion GetRotationForObjectSpawn ()
+	{
+		if(lookBody)
+			return lookBody.transform.rotation;
+		else
+			return base.GetRotationForObjectSpawn();
 	}
 
     #endregion
@@ -125,7 +133,7 @@ public class Character : Killable {
             float desiredAngle = Mathf.Atan2(lookDirection.y, lookDirection.x) * Mathf.Rad2Deg;
             Quaternion desiredFacing = Quaternion.Euler(new Vector3(0, 0, desiredAngle - 90));
             
-            lookBody.transform.localRotation = Quaternion.RotateTowards(currentFacing, desiredFacing, lookRotationSpeed * Time.deltaTime);
+			lookBody.transform.localRotation = Quaternion.RotateTowards(currentFacing, desiredFacing, lookRotationSpeed * Time.deltaTime);
         }
 	}
 

@@ -15,6 +15,7 @@ public class SpriteRandomiser : MonoBehaviour {
 
 	public void RandomiseSprite()
 	{
+		Random.seed = (int)Time.time;
 		if(possibleStates.Length > 0)
 		{
 			PossibleState state = possibleStates[Random.Range(0,possibleStates.Length)];

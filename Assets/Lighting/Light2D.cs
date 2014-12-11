@@ -6,7 +6,24 @@ public class Light2D: MonoBehaviour
 {
 	public float radius = 100;
 	public Mesh lightMesh = null;
-	protected List<Vector2> lightMeshPoints = new List<Vector2>();
+
+	public class LightMeshPoint : IComparable<LightMeshPoint>
+	{
+		public LightMeshPoint(Vector2 _point)
+		{
+			point = _point;
+			angle = Mathf.Atan2(point.y, point.x);
+		}
+		public Vector2 point;
+		public float angle;
+
+		public int CompareTo(LightMeshPoint comparePart)
+		{
+			if(this.angle == comparePart.angle) return 0;
+			return this.angle < comparePart.angle ? 1 : -1;
+		}
+	}
+	protected List<LightMeshPoint> lightMeshPoints = new List<LightMeshPoint>(1000);
 	protected LayerMask lightingMask;
 
 	// Use this for initialization
@@ -40,21 +57,24 @@ public class Light2D: MonoBehaviour
 		}
 		return dirFromCenter.magnitude;
 	}
-
-	void TryAddRayCast(Vector2 dir, float distance)
+	
+	void TryAddRayCast(ref Vector2 dir, float distance)
 	{		
-		RaycastHit2D hit = Physics2D.Raycast(this.transform.position, dir, distance, lightingMask.value);
-		
-		if(hit.collider != null)
+		Vector2 pos2D = this.transform.position;
+		RaycastHit2D raycastHit = Physics2D.Raycast(pos2D, dir, distance, lightingMask.value);
+
+		if(raycastHit.collider != null)
 		{
-			lightMeshPoints.Add(hit.point - (Vector2)this.transform.position);
+			lightMeshPoints.Add(new LightMeshPoint(raycastHit.point - pos2D));
 		}
 		else
 		{
-			lightMeshPoints.Add(dir * distance);
+			lightMeshPoints.Add(new LightMeshPoint(dir * distance));
 		}
 	}
 
+	Quaternion rayRotLeft = Quaternion.AngleAxis(Mathf.Rad2Deg * 0.00001f, Vector3.forward);
+	Quaternion rayRotRight = Quaternion.AngleAxis(Mathf.Rad2Deg * -0.00001f, Vector3.forward);
 	void ProcessPoint(Vector2 point)
 	{
 		Vector2 relativePosition = point - (Vector2)this.transform.position;
@@ -62,13 +82,13 @@ public class Light2D: MonoBehaviour
 
 		Vector2 dir = relativePosition.normalized;
 
-		TryAddRayCast(dir, relativePosition.magnitude);
+		TryAddRayCast(ref dir, relativePosition.magnitude);
 
-		Vector2 dirOff = Quaternion.AngleAxis(Mathf.Rad2Deg * 0.00001f, Vector3.forward) * dir;
-		TryAddRayCast(dirOff, distanceToBound(dirOff));
+		Vector2 dirOff = rayRotLeft * dir;
+		TryAddRayCast(ref dirOff, distanceToBound(dirOff));
 
-		dirOff = Quaternion.AngleAxis(Mathf.Rad2Deg * -0.00001f, Vector3.forward) * dir;
-		TryAddRayCast(dirOff, distanceToBound(dirOff));
+		dirOff = rayRotRight * dir;
+		TryAddRayCast(ref dirOff, distanceToBound(dirOff));
 	}
 
 	delegate void ProcessColliderMethod(Collider2D x);
@@ -126,18 +146,12 @@ public class Light2D: MonoBehaviour
 			Vector2 dir = relativePosition.normalized;
 			float dist = relativePosition.magnitude;
 			
-			TryAddRayCast(dir, dist);
+			TryAddRayCast(ref dir, dist);
 		}
 
-		//sort by angle
-		lightMeshPoints.Sort(delegate(Vector2 a, Vector2 b)
-		{
-			float angleA = Mathf.Atan2(a.y, a.x);			
-			float angleB = Mathf.Atan2(b.y, b.x);
-			return -angleA.CompareTo(angleB);
-		});
+		lightMeshPoints.Sort();
 
-		lightMeshPoints.Add(Vector2.zero);
+		lightMeshPoints.Add(new LightMeshPoint(Vector2.zero));
 
 		BuildLightMesh();
 
@@ -152,7 +166,7 @@ public class Light2D: MonoBehaviour
 		Vector2[] newUVs = new Vector2[vertexCount];
 		for(int i=0; i< vertexCount; i++)
 		{
-			Vector3 v = lightMeshPoints[i];
+			Vector3 v = lightMeshPoints[i].point;
 			newVertices[i] = v;
 			newUVs[i] = v/(radius*2);
 		}

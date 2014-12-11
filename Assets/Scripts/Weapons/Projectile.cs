@@ -5,7 +5,7 @@ using System.Collections.Generic;
 [RequireComponent(typeof(CircleCollider2D))]
 public class Projectile : MonoBehaviour 
 {
-	public Killable owner = null; //TODO: change to team alignment
+	public Killable owner = null;
 
 	public int baseDamage = 1;
 	public float damageScale = 1;
@@ -17,9 +17,12 @@ public class Projectile : MonoBehaviour
 
 	public GameObject[] spawnOnDestroy = new GameObject[0];
 
-	void OnTriggerEnter2D(Collider2D _other)
+	public AudioClip soundOnHitKillable = null;
+	public AudioClip soundOnHitNonKillable = null;
+
+	void OnCollisionEnter2D(Collision2D collision)
 	{
-		Killable killable = _other.GetComponent<Killable>();
+		Killable killable = collision.collider.GetComponent<Killable>();
 		if(owner.CanDamage(killable))
 		{
 			int realDamage = (int)(baseDamage * damageScale);
@@ -29,13 +32,23 @@ public class Projectile : MonoBehaviour
 			
 			killable.BroadcastMessage("OnDamage", damagePacket, SendMessageOptions.DontRequireReceiver);
 
-			if(destroyOnHit)
+			FAFAudio.Instance.PlayOnce2D(soundOnHitKillable, this.transform.position, 0.3f);
+		}
+		else
+		{
+			FAFAudio.Instance.PlayOnce2D(soundOnHitNonKillable, this.transform.position, 0.3f);
+		}
+		if(destroyOnHit)
+		{
+			for(int i = 0; i < spawnOnDestroy.Length; i++)
 			{
-				Destroy(gameObject);
+				GameObject gobj = GameObject.Instantiate(spawnOnDestroy[i]) as GameObject;
+				gobj.transform.position = transform.position;
 			}
+			Destroy(gameObject);
 		}
 	}
-
+	
 	void Update()
 	{
 		lifeTime -= Time.deltaTime;
@@ -45,14 +58,4 @@ public class Projectile : MonoBehaviour
 		}
 		rigidbody2D.velocity = transform.up * speed;
 	}
-
-	void OnDestroy()
-	{
-		for(int i = 0; i < spawnOnDestroy.Length; i++)
-		{
-			GameObject gobj = GameObject.Instantiate(spawnOnDestroy[i]) as GameObject;
-			gobj.transform.position = transform.position;
-		}
-	}
-
 }

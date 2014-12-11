@@ -6,8 +6,8 @@ public class Weapon : MonoBehaviour
 
     #region public variables
 
-    public Projectile projectilePrefab = null;
-    public AudioClip fireSound = null;
+    public GameObject attackPrefab = null;
+    public AudioClip attackSound = null;
 
     public Transform spawnNode = null; //defaults to self if null
 
@@ -23,16 +23,27 @@ public class Weapon : MonoBehaviour
     protected bool isFiring = false;
     protected float fireTick = 0;
 
+	protected bool canFire = true;
+
     #endregion
+
+	#region public methods
+
+	public virtual void TryUseWeapon()
+	{
+		OnFire();
+	}
+
+	#endregion
 
     #region protected methods
 
     protected virtual void OnFire()
     {
         Quaternion spead = Quaternion.Euler(0, 0, Random.Range(-fireSpreadDeg, fireSpreadDeg));
-        GameObject gobj = Instantiate(projectilePrefab, spawnNode.position, spawnNode.rotation * spead) as GameObject;
+		GameObject gobj = Instantiate(attackPrefab, spawnNode.position, spawnNode.rotation * spead) as GameObject;
 
-        FAFAudio.Instance.PlayOnce2D(fireSound, transform.position, 0.3f);
+		FAFAudio.Instance.PlayOnce2D(attackSound, transform.position, 0.3f);
     }
 
     #endregion
@@ -41,7 +52,10 @@ public class Weapon : MonoBehaviour
 
     void Awake()
     {
-        spawnNode = transform;
+		if(spawnNode != null)
+		{
+        	spawnNode = transform;
+		}
     }
 
     void Update()

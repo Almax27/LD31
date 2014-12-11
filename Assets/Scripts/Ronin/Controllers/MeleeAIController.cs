@@ -128,7 +128,7 @@ public class MeleeAIController : MonoBehaviour {
 				entity.TryLook(delta);
 				if(Vector3.Distance(entity.transform.position, target.transform.position) < attackDistance)
 				{
-					entity.TryMeleeAttack();
+					//entity.TryMeleeAttack();
                     lastAttackTime = Time.time;
 				}
 			}
