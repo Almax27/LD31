@@ -41,6 +41,11 @@ public class ZombieAI : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
 	{
+		if(Time.timeScale == 0)
+		{
+			return;
+		}
+
 		TryUpdateTarget();
 
 		Vector2 targetPosition;
