@@ -29,6 +29,7 @@ public class PlayerController : MonoBehaviour
     #region private variables
 
     float controlLockTick = 0;
+	float timeOfDeath = 0;
 
     #endregion
 
@@ -246,11 +247,22 @@ public class PlayerController : MonoBehaviour
 			transform.position = character.transform.position;
 			transform.rotation = character.lookBody.rotation;
 		}
-
-		if(!character) //FIXME: gameover hack
+		else //handle player death
         {
-            Application.LoadLevel(Application.loadedLevel);
+			if(timeOfDeath <= 0)
+			{
+				timeOfDeath = Time.time;
+			}
+			if(Time.time - timeOfDeath > 0.5f && Input.anyKeyDown)
+			{
+				Respawn();
+			}
         }
+	}
+
+	void Respawn()
+	{
+		Application.LoadLevel(Application.loadedLevel);
 	}
 
     void OnDisable()

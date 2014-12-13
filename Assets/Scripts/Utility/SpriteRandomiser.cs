@@ -30,10 +30,4 @@ public class SpriteRandomiser : MonoBehaviour {
 	{
 		RandomiseSprite();
 	}
-	
-	// Update is called once per frame
-	void Update () 
-	{
-		
-	}
 }

@@ -23,5 +23,10 @@ public class Splat : MonoBehaviour {
 		{
 			this.transform.localScale = new Vector3(scale,scale,scale);
 		}
+		else
+		{
+			this.transform.localScale = Vector3.one;
+			Destroy(this); //remove splat script
+		}
 	}
 }
