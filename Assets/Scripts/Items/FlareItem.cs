@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class FlareItem : MonoBehaviour {
+public class FlareItem : Item {
 
 	public LightController lightController = null;
 
@@ -57,5 +57,11 @@ public class FlareItem : MonoBehaviour {
 				Destroy(this.gameObject);
 			}
 		}
+	}
+
+	protected override void OnPickedUp (Collider2D _other)
+	{
+		//do nothing
+		//base.OnPickedUp (_other);
 	}
 }

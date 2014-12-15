@@ -6,6 +6,7 @@ public class Gun : MonoBehaviour {
 	public Killable owner = null;
 	public Projectile bulletPrefab = null;
 	public AudioClip attackSound = null;
+	public AudioClip noAmmoSound = null;
 	public string animationTrigger = "";
 
 	public float bulletSpread;
@@ -16,7 +17,7 @@ public class Gun : MonoBehaviour {
 	public virtual bool BeginFire()
 	{
 		isFiring = true;
-		return true;
+		return isFiring;
 	}
 
 	public virtual void EndFire()

@@ -1,81 +1,39 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class ObjectiveSpawner : MonoBehaviour {
+public class ObjectiveSpawner : ItemSpawner {
 
-	[System.Serializable]
-	public class ObjectiveToSpawn
+	public int objectivesActiveAtOnce = 2;
+	protected int activeCount = 0;
+
+	protected override void Start ()
 	{
-		public Objective objectivePrefab = null;
-		public float weighting = 1;
-	}
-	public ObjectiveToSpawn[] objectivesToSpawn = new ObjectiveToSpawn[0];
-	public float spawnInterval = 60;
+		base.Start ();
 
-	protected List<Transform> placesToSpawn = new List<Transform>();
-	protected List<Transform> availablePlacesToSpawn = new List<Transform>();
-
-	protected float lastSpawnTime = 0;
-
-	// Use this for initialization
-	void Start () 
-	{
-		foreach(Transform child in this.transform)
-		{
-			placesToSpawn.Add(child);
-		}
-		availablePlacesToSpawn = new List<Transform>(placesToSpawn);
-	}
-	
-	// Update is called once per frame
-	void Update () 
-	{
-		if(Time.time > lastSpawnTime + spawnInterval)
-		{
-			SpawnNewObjective();
-			lastSpawnTime = Time.time;
-		}
+		SpawnObjective();
 	}
 
-	void SpawnNewObjective()
+	protected void SpawnObjective()
 	{
-		List<Transform> spawnPoints = new List<Transform>(placesToSpawn);
-
-		//pick random objective based on weighting
-		Objective objectivePrefab = null;
-		float totalWeight = 0;
-		foreach(ObjectiveToSpawn objToSpawn in objectivesToSpawn)
+		while(activeCount < objectivesActiveAtOnce)
 		{
-			totalWeight += objToSpawn.weighting;
-		}
-		float randomValue = Random.Range(0, totalWeight);
-		foreach(ObjectiveToSpawn objToSpawn in objectivesToSpawn)
-		{
-			if(randomValue < objToSpawn.weighting)
+			Item newItem = SpawnNewItem();
+			if(newItem)
 			{
-				objectivePrefab = objToSpawn.objectivePrefab;
+				activeCount++;
+				newItem.onPickedUp += delegate(Item _itemPickedUp) 
+				{
+					activeCount--;
+					SpawnObjective();
+				};
+			}
+			else
+			{
+				Debug.LogError("Failed to create new objective");
 				break;
 			}
 		}
-		if(objectivePrefab && availablePlacesToSpawn.Count > 0)
-		{
-			//pick random location and remove it from the available set
-			int index = Random.Range(0, availablePlacesToSpawn.Count);
-			Transform spawnLocation = availablePlacesToSpawn[index];
-			availablePlacesToSpawn.RemoveAt(index);
-
-			//create objective instance
-			GameObject gobj = Instantiate(objectivePrefab.gameObject) as GameObject;
-			Objective newObjective = gobj.GetComponent<Objective>();
-			newObjective.onPickedUp += delegate(Objective objective) {
-				if(!availablePlacesToSpawn.Contains(spawnLocation))
-				{
-					availablePlacesToSpawn.Add(spawnLocation);
-				}
-			};
-
-			//set objective to the location of spawner
-			newObjective.transform.position = spawnLocation.transform.position;
-		}
 	}
+
+
 }

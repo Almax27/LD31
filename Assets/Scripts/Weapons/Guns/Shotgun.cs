@@ -10,11 +10,21 @@ public class Shotgun : Gun {
 	
 	public override bool BeginFire()
 	{
-		if(Time.time > lastFireTime + rateOfFire)
+		var playerStats = PlayerController.instance.playerStats;
+		if(playerStats.ammo <= 0)
 		{
-			FireProjectile();
-			lastFireTime = Time.time;
+			FAFAudio.Instance.PlayOnce2D(noAmmoSound, transform.position, 0.3f);
+			return false;
+		}
+		else if(Time.time > lastFireTime + rateOfFire)
+		{
 			base.BeginFire();
+
+			int shotsToFire = Mathf.Min(bulletsPerShot, playerStats.ammo);
+			playerStats.ammo -= shotsToFire;
+
+			FireBurst(shotsToFire);
+			lastFireTime = Time.time;
 
 			FAFAudio.Instance.PlayOnce2D(attackSound, transform.position, 0.3f);
 
@@ -23,11 +33,11 @@ public class Shotgun : Gun {
 		return false;
 	}
 
-	protected override void FireProjectile()
+	protected void FireBurst(int _projectileCount)
 	{
-		for(int i = 0; i < bulletsPerShot; i++)
+		for(int i = 0; i < _projectileCount; i++)
 		{
-			base.FireProjectile();
+			FireProjectile();
 		}
 	}
 }

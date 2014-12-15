@@ -1,0 +1,7 @@
+noAmmo = http://soundbible.com/1405-Dry-Fire-Gun.html
+assaultRifle = https://www.freesound.org/people/pepv/sounds/205013/
+shotgun = https://www.freesound.org/people/18hiltc/sounds/186049/ (cut first shot only)
+melee = https://www.freesound.org/people/Qat/sounds/114682/
+pistol = https://www.freesound.org/people/LeMudCrab/sounds/163456/
+bulletHitFlesh = https://www.freesound.org/people/yottasounds/sounds/232135/
+swing = https://www.freesound.org/people/EverHeat/sounds/205554/

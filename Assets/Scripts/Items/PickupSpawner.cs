@@ -1,15 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PickupSpawner : MonoBehaviour {
+public class PickupSpawner : ItemSpawner 
+{
+	public float minSpawnInterval = 0;
+	public int maxSpawnCount = 1;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
+	protected float lastSpawnTime = 0;
+	protected int activePickupCount = 0;
 	
 	// Update is called once per frame
-	void Update () {
-	
+	void Update () 
+	{
+		if(Time.time > lastSpawnTime + minSpawnInterval)
+		{
+			if(activePickupCount < maxSpawnCount)
+			{
+				Item item = SpawnNewItem();
+				item.onPickedUp += delegate(Item _itemPickedUp) 
+				{
+					activePickupCount--;
+				};
+				activePickupCount++;
+			}
+			lastSpawnTime = Time.time;
+		}
 	}
 }

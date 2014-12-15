@@ -17,7 +17,7 @@ public class HelpOverlay : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
 	{
-		if(Input.GetKeyDown(KeyCode.H) && imageGobj)
+		if(Time.timeScale > 0 && Input.GetKeyDown(KeyCode.H) && imageGobj)
 		{
 			imageGobj.SetActive(!imageGobj.activeSelf);
 			if(imageGobj.activeSelf)

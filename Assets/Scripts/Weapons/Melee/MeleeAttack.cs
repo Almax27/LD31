@@ -8,6 +8,7 @@ public class MeleeAttack : MonoBehaviour
 	public Killable owner = null; //TODO: change to team alignment
 	public string animationTrigger = "";
 	public AudioClip soundOnAttack = null;
+	public AudioClip soundOnHit = null;
 
 	public int baseDamage = 1;
 	public float damageScale = 1;
@@ -40,6 +41,8 @@ public class MeleeAttack : MonoBehaviour
 			tick = 0;
 
 			lastUseTime = Time.time;
+
+			FAFAudio.Instance.PlayOnce2D(soundOnAttack, this.transform.position, 0.3f);
 
 			return true;
 		}
@@ -86,7 +89,7 @@ public class MeleeAttack : MonoBehaviour
 
 				processed.Add(killable);
 
-				FAFAudio.Instance.PlayOnce2D(soundOnAttack, this.transform.position, 0.3f);
+				FAFAudio.Instance.PlayOnce2D(soundOnHit, this.transform.position, 0.3f);
 			}
 		}
 	}

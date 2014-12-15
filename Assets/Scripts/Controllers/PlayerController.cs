@@ -3,32 +3,42 @@ using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour 
 {
+	#region public types
+
+	[System.Serializable]
+	public class PlayerStats
+	{
+		public int money = 0;
+		public int flares = 0;
+		public int ammo = 0;
+		public int currentGun = 0;
+		public int currentMelee = 0;
+	}
+
+	#endregion
+
 
     #region public variables
 
-    public AudioClip music; //lazy music start hack
+	public static PlayerController instance = null;//lazy static accessor
 
-    public static PlayerController instance = null;//lazy static accessor
+	public AudioClip music = null; //lazy music hack
+
+	public PlayerStats playerStats = new PlayerStats();
 
     public CombatCharacter character;
 
-	public bool inputLocked = false;
-
 	public FlareItem flareItemPrefab;
-
-	public int currentGun = 0;
+	
 	public List<Gun> availableGuns = new List<Gun>();
-
-	public int currentMelee = 0;
 	public List<MeleeAttack> availableMelee = new List<MeleeAttack>();
-
 	public bool isMeleeSelected = false;
 
     #endregion
 
     #region private variables
 
-    float controlLockTick = 0;
+    float controlLockTick = 0; //set this to time in seconds for input to lock
 	float timeOfDeath = 0;
 
     #endregion
@@ -124,11 +134,11 @@ public class PlayerController : MonoBehaviour
 		{
 			if(isMeleeSelected == false)
 			{
-				SelectGun(currentGun + 1);
+				SelectGun(playerStats.currentGun + 1);
 			}
 			else
 			{
-				SelectGun(currentGun);
+				SelectGun(playerStats.currentGun);
 			}
 		}
 
@@ -156,15 +166,25 @@ public class PlayerController : MonoBehaviour
 
 	void DropFlare()
 	{
-		GameObject gobj = Instantiate(flareItemPrefab.gameObject) as GameObject;
-		gobj.transform.position = this.transform.position;
+		if(playerStats.flares > 0)
+		{
+			GameObject gobj = Instantiate(flareItemPrefab.gameObject) as GameObject;
+			gobj.transform.position = this.transform.position;
+
+			playerStats.flares--;
+		}
 	}
 
 	Gun GetCurrentGun()
 	{
-		if(currentGun < availableGuns.Count)
+		if(Shop.instance == null || !Shop.instance.IsGunPurchased(playerStats.currentGun))
 		{
-			return availableGuns[currentGun];
+			return null; //not purchased
+		}
+
+		if(playerStats.currentGun < availableGuns.Count)
+		{
+			return availableGuns[playerStats.currentGun];
 		}
 		else
 		{
@@ -174,16 +194,21 @@ public class PlayerController : MonoBehaviour
 
 	void SelectGun(int _gunIndex)
 	{
+		if(Shop.instance == null || !Shop.instance.IsGunPurchased(_gunIndex))
+		{
+			return; //not purchased
+		}
+
 		Gun previousGun = GetCurrentGun();
 		if(previousGun && previousGun.isFiring)
 		{
 			previousGun.EndFire();
 		}
-		//TODO: check if it has been purchased
-		currentGun = _gunIndex;
-		if(currentGun >= availableGuns.Count)
+
+		playerStats.currentGun = _gunIndex;
+		if(playerStats.currentGun >= availableGuns.Count)
 		{
-			currentGun = 0;
+			playerStats.currentGun = 0;
 		}
 		isMeleeSelected = false;
 
@@ -196,9 +221,13 @@ public class PlayerController : MonoBehaviour
 
 	MeleeAttack GetCurrentMelee()
 	{
-		if(currentMelee < availableMelee.Count)
+		if(Shop.instance == null || !Shop.instance.IsMeleePurchased(playerStats.currentMelee))
 		{
-			return availableMelee[currentMelee];
+			return null; //not purchased
+		}
+		if(playerStats.currentMelee < availableMelee.Count)
+		{
+			return availableMelee[playerStats.currentMelee];
 		}
 		else
 		{
@@ -208,6 +237,10 @@ public class PlayerController : MonoBehaviour
 
 	void SelectMelee()
 	{
+		if(Shop.instance == null || !Shop.instance.IsMeleePurchased(playerStats.currentMelee))
+		{
+			return; //not purchased
+		}
 		isMeleeSelected = true;
 	}
 

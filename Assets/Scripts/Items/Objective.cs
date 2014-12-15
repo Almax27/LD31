@@ -2,30 +2,25 @@
 using System.Collections;
 
 
-public class Objective : MonoBehaviour 
+public class Objective : Item 
 {
-	public delegate void OnPickedUpDelegate(Objective objective);
+	public int minWorth = 10;
+	public int maxWorth = 20;
 
-	public OnPickedUpDelegate onPickedUp;
+	public GameObject pickupTextPrefab;
 
-	// Use this for initialization
-	void Start () 
+	protected override void OnPickedUp (Collider2D _other)
 	{
-	
-	}
-	
-	// Update is called once per frame
-	void Update () 
-	{
-	
-	}
+		var stats = PlayerController.instance.playerStats;
+		int worth = Random.Range(minWorth, maxWorth + 1); //inclusive range
+		stats.money += worth;
 
-	void OnTriggerEnter2D(Collider2D _other)
-	{
-		if(_other.tag == "Player")
-		{
-			onPickedUp(this);
-			Destroy(this.gameObject);
-		}
+		GameObject gobj = Instantiate(pickupTextPrefab) as GameObject;
+		gobj.transform.position = this.transform.position;
+
+		TextMesh text = gobj.GetComponentInChildren<TextMesh>();
+		text.text = "+" + worth.ToString();
+
+		base.OnPickedUp (_other);
 	}
 }
