@@ -43,7 +43,7 @@ public class LightController : MonoBehaviour
 			light2d.radius = radius;
 			Color c = color;
 			c.a /= lights.Length;
-			light2d.renderer.material.color = c;
+			light2d.GetComponent<Renderer>().material.color = c;
 		}
 	}
 }

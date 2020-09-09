@@ -81,7 +81,7 @@ public class CombatCharacter : Character
 			base.Update ();
 		else
 		{
-			rigidbody2D.velocity = knockBackVelocity;
+			GetComponent<Rigidbody2D>().velocity = knockBackVelocity;
 			knockBackTime -= Time.deltaTime;
 		}
 	}

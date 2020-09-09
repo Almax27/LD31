@@ -16,7 +16,7 @@ public class ZombieAI : MonoBehaviour {
 	public float wanderingSpeed = 1;
 
 	protected Transform target = null;
-	protected NavMeshPath path = null;
+	protected UnityEngine.AI.NavMeshPath path = null;
 	protected float pathThresholdSq = 0.5f*0.5f;
 	protected int targetCorner = 1;
 	protected float lastTargetUpdateTime = 0;
@@ -28,12 +28,14 @@ public class ZombieAI : MonoBehaviour {
 	protected Vector3 lastSeenPosition = Vector3.zero;
 	protected bool chasingTarget = false;
 
+    protected float attackTick = 0;
+
 	// Use this for initialization
 	void Start ()
 	{
 		character = GetComponentInChildren<CombatCharacter>();
 
-		path = new NavMeshPath();
+		path = new UnityEngine.AI.NavMeshPath();
 
 		lastTargetUpdateTime = Time.time + Random.value;
 	}
@@ -45,6 +47,13 @@ public class ZombieAI : MonoBehaviour {
 		{
 			return;
 		}
+
+        //Mini stun on damage
+        if(Time.time - character.LastDamageTime < 0.2f)
+        {
+            character.TryMove(Vector2.zero);
+            return;
+        }
 
 		TryUpdateTarget();
 
@@ -94,7 +103,7 @@ public class ZombieAI : MonoBehaviour {
 		Vector3 targetInNavSpace = ConvertPoint(targetPosition);
 		float distanceSq = (targetInNavSpace - thisInNavSpace).sqrMagnitude;
 		//path to target position
-		if(distanceSq > 0.5f && NavMesh.CalculatePath(thisInNavSpace, targetInNavSpace, -1, path))
+		if(distanceSq > 0.5f && UnityEngine.AI.NavMesh.CalculatePath(thisInNavSpace, targetInNavSpace, -1, path))
 		{
 			//draw path
 			for(int i = 0; i < path.corners.Length-1; i++)
@@ -131,10 +140,24 @@ public class ZombieAI : MonoBehaviour {
 			float angleToTarget = Vector2.Angle(character.lookBody.rotation * Vector2.up, dirToTarget);
 			if(meleeAttack && dirToTarget.sqrMagnitude < attackDistance * attackDistance && angleToTarget < 45)
 			{
-				meleeAttack.owner = character;
-				meleeAttack.ApplyDamage();
+                attackTick += Time.deltaTime;
+
+                if (attackTick > 0.2f)
+                {
+                    meleeAttack.owner = character;
+                    meleeAttack.ApplyDamage();
+                    attackTick = 0.0f;
+                }
 			}
+            else
+            {
+                attackTick = 0.0f;
+            }
 		}
+        else
+        {
+            attackTick = 0.0f;
+        }
 	}
 
 	void TryUpdateTarget()
@@ -179,7 +202,7 @@ public class ZombieAI : MonoBehaviour {
 					Vector3 thisInNavSpace = ConvertPoint(this.transform.position);
 					Vector3 targetInNavSpace = ConvertPoint(nearbyTarget.transform.position);
 					
-					if(NavMesh.CalculatePath(thisInNavSpace, targetInNavSpace, -1, path))
+					if(UnityEngine.AI.NavMesh.CalculatePath(thisInNavSpace, targetInNavSpace, -1, path))
 					{
 						float lenSq = 0;
 						for(int j = 0; j < path.corners.Length-1; j++)

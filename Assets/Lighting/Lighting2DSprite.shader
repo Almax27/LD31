@@ -1,4 +1,6 @@
-﻿Shader "Lighting2D/Sprite"
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "Lighting2D/Sprite"
 {
 	Properties
 	{
@@ -58,7 +60,7 @@
 			v2f vert(appdata_t IN)
 			{
 				v2f OUT;
-				OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
+				OUT.vertex = UnityObjectToClipPos(IN.vertex);
 				OUT.texcoord = IN.texcoord;
 				OUT.screenPos = ComputeScreenPos (OUT.vertex).xy;
 				

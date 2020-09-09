@@ -16,6 +16,11 @@ public class Killable : MonoBehaviour
 
     public int health = 10;
 
+    public float LastDamageTime { get { return lastDamageTime; } }
+
+    public GameObject moneyTextPrefab;
+    public int moneyValue = 0;
+
     public AudioClip deathSound = null;
     public AudioClip damageSound = null;
 
@@ -30,12 +35,13 @@ public class Killable : MonoBehaviour
 	#region protected variables
 
 	protected CombatCharacter lastAggressor = null;
+    protected float lastDamageTime = 0.0f;
 
-	#endregion
+    #endregion
 
-	#region public methods
+    #region public methods
 
-	public virtual void SpawnObject(ObjectToSpawn spawnItem, Quaternion rotation)
+    public virtual void SpawnObject(ObjectToSpawn spawnItem, Quaternion rotation)
 	{
 		for(int i = 0; i < spawnItem.count; i++)
 		{
@@ -77,9 +83,11 @@ public class Killable : MonoBehaviour
 			text.transform.position = this.transform.position;
 			text.GetComponentInChildren<TextMesh>().text = _damagePacket.damageAmount.ToString();
 		}
-		
-		//Debug.Log(name + " took " + _damagePacket.damageAmount + " damage");
-	}
+
+        lastDamageTime = Time.time;
+
+        //Debug.Log(name + " took " + _damagePacket.damageAmount + " damage");
+    }
 	
 	public virtual void OnDeath()
 	{
@@ -92,8 +100,23 @@ public class Killable : MonoBehaviour
 		{
 			SpawnObject(spawnOnDeath[i], GetRotationForObjectSpawn());
 		}
-		
-		Destroy(this.gameObject);
+
+        if (moneyValue > 0)
+        {
+            var stats = PlayerController.instance.playerStats;
+            stats.money += moneyValue;
+
+            if (moneyTextPrefab)
+            {
+                GameObject gobj = Instantiate(moneyTextPrefab) as GameObject;
+                gobj.transform.position = this.transform.position;
+
+                TextMesh text = gobj.GetComponentInChildren<TextMesh>();
+                text.text = "+" + moneyValue.ToString();
+            }
+        }
+
+        Destroy(this.gameObject);
 	}
 
 	public virtual bool CanDamage(Killable _killable)

@@ -19,7 +19,7 @@ public class SpriteRandomiser : MonoBehaviour {
 		if(possibleStates.Length > 0)
 		{
 			PossibleState state = possibleStates[Random.Range(0,possibleStates.Length)];
-			SpriteRenderer spriteRenderer = renderer as SpriteRenderer;
+			SpriteRenderer spriteRenderer = GetComponent<Renderer>() as SpriteRenderer;
 			spriteRenderer.sprite = state.texture;
 			spriteRenderer.color = state.color;
 		}

@@ -28,9 +28,9 @@ public class SimpleAnimation : MonoBehaviour
 	    if (playFadeAnim)
         {
             fadeAnimTick += Time.deltaTime;
-            Color color = renderer.material.color;
+            Color color = GetComponent<Renderer>().material.color;
             color.a = fadeAnim.Evaluate(fadeAnimTick);
-            renderer.material.color = color;
+            GetComponent<Renderer>().material.color = color;
         }
         if (playRotAnim)
         {

@@ -28,6 +28,8 @@ public class Shop : MonoBehaviour {
 	public Text playerFlareText = null;
 	public Text playerAmmoText = null;
 
+    public AudioClip PurchaseClip = null;
+
 	bool isShopOpen = false;
 
 	void Awake()
@@ -178,7 +180,7 @@ public class Shop : MonoBehaviour {
 			}
 			else if(_item == freedom)
 			{
-				Application.LoadLevel(Application.loadedLevel);
+				Application.LoadLevel("SplashScene");
 			}
 
 			playerStats.money -= _item.price;
@@ -188,6 +190,8 @@ public class Shop : MonoBehaviour {
 			{
 				_item.purchasedOverlay.gameObject.SetActive(true);
 			}
+
+            FAFAudio.Instance.PlayOnce2D(PurchaseClip, Vector3.zero, 0.3f);
 
 			return true;
 		}

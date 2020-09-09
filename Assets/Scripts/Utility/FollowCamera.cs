@@ -22,7 +22,7 @@ public class FollowCamera : MonoBehaviour {
     {
         if(target) 
         {
-            Vector3 point = camera.WorldToViewportPoint(target.position);
+            Vector3 point = GetComponent<Camera>().WorldToViewportPoint(target.position);
             Rect deadArea = new Rect((0.5f - deadZone.x*0.5f), (0.5f - deadZone.y*0.5f), deadZone.x, deadZone.y);
 
             destination = target.position;
@@ -33,7 +33,7 @@ public class FollowCamera : MonoBehaviour {
             }
             else if(!deadArea.Contains(point))
             {
-                destination += transform.position - camera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, point.z));
+                destination += transform.position - GetComponent<Camera>().ViewportToWorldPoint(new Vector3(0.5f, 0.5f, point.z));
             }
 
 

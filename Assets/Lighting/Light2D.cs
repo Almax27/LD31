@@ -155,7 +155,7 @@ public class Light2D: MonoBehaviour
 
 		BuildLightMesh();
 
-		this.renderer.material.SetFloat("_Radius", radius);
+		this.GetComponent<Renderer>().material.SetFloat("_Radius", radius);
 	}
 
 	void BuildLightMesh()

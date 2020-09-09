@@ -37,7 +37,7 @@ public class MeleeAttack : MonoBehaviour
 		{
 			processed.Clear();
 			
-			this.collider2D.enabled = true;
+			this.GetComponent<Collider2D>().enabled = true;
 			tick = 0;
 
 			lastUseTime = Time.time;
@@ -56,12 +56,12 @@ public class MeleeAttack : MonoBehaviour
 
 	void Awake()
 	{
-		if(this.collider2D == null)
+		if(this.GetComponent<Collider2D>() == null)
 		{
 			Debug.LogError("Missing Collider2D on AreaDamage");
 			enabled = false;
 		}
-		this.collider2D.enabled = false;
+		this.GetComponent<Collider2D>().enabled = false;
 	}
 
 	void Update()
@@ -69,7 +69,7 @@ public class MeleeAttack : MonoBehaviour
 		tick += Time.deltaTime;
 		if(tick > duration)
 		{
-			this.collider2D.enabled = false;
+			this.GetComponent<Collider2D>().enabled = false;
 		}
 	}
 

@@ -11,7 +11,7 @@ public class SplashScreen : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
 	{
-		if(Input.anyKeyDown)
+		//if(Input.anyKeyDown)
 		{
 			Application.LoadLevel("GameScene");
 		}

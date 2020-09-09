@@ -25,7 +25,7 @@ public class AudioRepeater : MonoBehaviour
         if(alarmSoundTick > alarmSoundDelay)
         {
             alarmSoundTick -= alarmSoundDelay;
-            this.audio.Play();
+            this.GetComponent<AudioSource>().Play();
         }
     }
 

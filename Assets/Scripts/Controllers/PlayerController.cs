@@ -263,7 +263,15 @@ public class PlayerController : MonoBehaviour
 		{
 			return;
 		}
-		if (character)
+
+#if UNITY_EDITOR
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        {
+            playerStats.money += 100;
+        }
+#endif
+
+            if (character)
 		{
 			if(controlLockTick <= 0)
             {
@@ -303,5 +311,5 @@ public class PlayerController : MonoBehaviour
 		character.TryMove(Vector2.zero);
     }
 
-    #endregion
+#endregion
 }

@@ -56,6 +56,6 @@ public class Projectile : MonoBehaviour
 		{
 			Destroy(gameObject);
 		}
-		rigidbody2D.velocity = transform.up * speed;
+		GetComponent<Rigidbody2D>().velocity = transform.up * speed;
 	}
 }

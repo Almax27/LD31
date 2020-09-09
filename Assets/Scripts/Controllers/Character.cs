@@ -120,11 +120,11 @@ public class Character : Killable {
                 }
             }
 
-            rigidbody2D.velocity = dir * movementSpeed;
+            GetComponent<Rigidbody2D>().velocity = dir * movementSpeed;
         } 
         else
         {
-            rigidbody2D.velocity = Vector3.zero;
+            GetComponent<Rigidbody2D>().velocity = Vector3.zero;
         }
 
         if (lookBody && lookDirection != Vector2.zero)
